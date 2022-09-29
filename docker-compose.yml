@@ -9,11 +9,13 @@ services:
     ports:
       - "80:8080"
     command: ["npm", "run", "serve"]
+    depends_on:
+      - server
   server:
     image: node:18-alpine
     volumes:
       - ./server:/app
     working_dir: /app
     ports:
-      - "3000"
+      - "3000:3000"
     command: ["npm", "run", "serve"]

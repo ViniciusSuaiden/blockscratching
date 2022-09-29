@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "npm i && node src/index.js"
+    "serve": "npm i && nodemon src/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "nodemon": "^2.0.20",
     "socket.io": "^4.5.2"
   }
 }
