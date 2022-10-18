@@ -6,6 +6,7 @@ import Block from './block';
 export default class Chain {
   // Singleton instance
   public static instance = new Chain();
+  public static socket: any
 
   chain: Block[];
 
@@ -22,16 +23,17 @@ export default class Chain {
   }
 
 
-  // Add a new block to the chain if valid signature & proof of work is complete
-  addBlock(transaction: Transaction, senderPublicKey: string, signature: Buffer) {
-    const verify = crypto.createVerify('SHA256');
-    verify.update(transaction.toString());
-
-    const isValid = verify.verify(senderPublicKey, signature);
+  // Add a new block to the chain if the password is correct
+  addBlock(transaction: Transaction, senderPublicKey: string, password: string) {
+    const [salt, key] = senderPublicKey.split(":")
+    const hashedBuffer = crypto.scryptSync(password, salt, 64)
+    const isValid = hashedBuffer.toString() == key
 
     if (isValid) {
       const newBlock = new Block(this.lastBlock.hash, transaction);
       this.chain.push(newBlock);
+      Chain.socket.emit("send money", transaction.amount, transaction.payer, transaction.payee)
+      Chain.socket.emit("set chain", Chain.instance)
     }
   }
 

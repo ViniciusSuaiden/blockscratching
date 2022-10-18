@@ -6,20 +6,30 @@ export const io = new Server(http, {
 })
 
 import Wallet from './classes/wallet'
+import WalletObj from './interfaces/wallet_obj'
+import Transaction from './classes/transaction'
+import Chain from './classes/chain'
 
 io.on('connection', socket => {
     console.log('a user connected')
 
-    const satoshi = new Wallet();
-    const bob = new Wallet();
-    const alice = new Wallet();
+    Wallet.socket = socket
+    Chain.socket = socket
 
-    satoshi.sendMoney(50, bob.publicKey);
-    bob.sendMoney(23, alice.publicKey);
-    alice.sendMoney(5, bob.publicKey);
+    new Wallet('satoshi', 'sapass');
+    new Wallet('bob', 'bopass');
+    new Wallet('alice', 'alpass');
 
-    socket.on('send money', (amount, payer, payee) => {
-        satoshi.sendMoney(amount, bob.publicKey)
+    socket.on("get wallets to send money", (res: any) => {
+        let wallets: WalletObj[] = JSON.parse(res)
+        let payeePublicKey = wallets.filter(el => el.username == Wallet.payeeUsername)[0].publicKey
+        let payerPublicKey = wallets.filter(el => el.username == Wallet.payerUsername)[0].publicKey
+        const transaction = new Transaction(Wallet.amount, payerPublicKey, payeePublicKey)
+        Chain.instance.addBlock(transaction, payerPublicKey, Wallet.password)
+    })
+
+    socket.on('send money', (payer, password, amount, payee) => {
+        Wallet.sendMoney(payer, password, amount, payee)
     })
 })
 

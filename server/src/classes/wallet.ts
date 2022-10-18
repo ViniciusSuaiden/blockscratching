@@ -2,38 +2,36 @@ import * as crypto from 'crypto';
 import Transaction from './transaction';
 import Chain from './chain';
 import { io } from '../index' 
+import WalletObj from '../interfaces/wallet_obj';
 
 // Wallet gives a user a public/private keypair
 export default class Wallet {
-  public publicKey: string;
-  public privateKey: string;
 
-  constructor() {
-    const keypair = crypto.generateKeyPairSync('rsa', {
-      modulusLength: 2048,
-      publicKeyEncoding: { type: 'spki', format: 'pem' },
-      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-    });
+  public static socket: any
+  public static payerUsername: string
+  public static password: string
+  public static amount: number
+  public static payeeUsername: string
 
-    this.privateKey = keypair.privateKey;
-    this.publicKey = keypair.publicKey;
+  constructor(username: string, password: string) {
+    const salt = crypto.randomBytes(16).toString("hex")
+    const hashedPassword = crypto.scryptSync(password, salt, 64)
 
     io.emit('create wallet', {
-      privateKey: keypair.privateKey,
-      publicKey: keypair.publicKey,
+      username: username,
+      publicKey: `${salt}:${hashedPassword}`,
       money: 0
     })
   }
 
-  sendMoney(amount: number, payeePublicKey: string) {
-    const transaction = new Transaction(amount, this.publicKey, payeePublicKey);
-
-    const sign = crypto.createSign('SHA256');
-    sign.update(transaction.toString()).end();
-
-    const signature = sign.sign(this.privateKey); 
-    Chain.instance.addBlock(transaction, this.publicKey, signature);
-
-    io.emit("send money", amount, this.publicKey, payeePublicKey)
+  static sendMoney(
+    payerUsername: string, password: string, 
+    amount: number, payeeUsername: string
+  ) {
+    Wallet.socket.emit("get wallets to send money")
+    Wallet.payerUsername = payerUsername
+    Wallet.password = password
+    Wallet.amount = amount
+    Wallet.payeeUsername = payeeUsername
   }
 }
