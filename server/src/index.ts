@@ -9,6 +9,10 @@ import Wallet from './classes/wallet'
 import WalletObj from './interfaces/wallet_obj'
 import Transaction from './classes/transaction'
 import Chain from './classes/chain'
+import ChainObj from './interfaces/chain_obj'
+import Block from './classes/block'
+
+let chains: ChainObj = {}
 
 io.on('connection', socket => {
     console.log('a user connected')
@@ -19,6 +23,23 @@ io.on('connection', socket => {
     new Wallet('satoshi', 'sapass');
     new Wallet('bob', 'bopass');
     new Wallet('alice', 'alpass');
+
+    io.emit("get chains")
+    setTimeout(() => {
+        Chain.instance = new Chain(Chain.mode(chains)!.chain)
+    }, 2000)
+
+    socket.on("add block", newBlock => {
+        Chain.instance = new Chain(Chain.mode(chains)!.chain)
+        console.log(newBlock)
+        Chain.instance.chain.push(new Block(newBlock.prevHash, newBlock.transaction, newBlock.ts));
+        Chain.socket.emit("send money", newBlock.transaction.amount, newBlock.transaction.payer, newBlock.transaction.payee)
+        Chain.socket.emit("set chain", Chain.instance)
+    })
+
+    socket.on("set chains", instance => {
+        chains[socket.id] = instance
+    })
 
     socket.on("get wallets to send money", (res: any) => {
         let wallets: WalletObj[] = JSON.parse(res)

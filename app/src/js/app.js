@@ -28,6 +28,14 @@ socket.on("set chain", instance => {
   localStorage.setItem('chain', JSON.stringify(instance))
 })
 
+socket.on("get chains", () => {
+  socket.emit("set chains", JSON.parse(localStorage.getItem('chain') || "{}"))
+})
+
+socket.on("add block", newBlock => {
+  socket.emit("add block", newBlock)
+})
+
 document.querySelector('#send').onclick = () => {
   const payer = document.querySelector('#payer').value
   const password = document.querySelector('#password').value
