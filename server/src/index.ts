@@ -30,11 +30,16 @@ io.on('connection', socket => {
     }, 2000)
 
     socket.on("add block", newBlock => {
+        console.log("// CHAINS //")
+        for(let el in chains){
+            console.log(`${chains[el].chain.length} ${chains[el].chain[chains[el].chain.length - 1].transaction.amount}`)
+        }
         Chain.instance = new Chain(Chain.mode(chains)!.chain)
-        console.log(newBlock)
+        console.log(`last amount from Chain.instance.chain: ${Chain.instance.chain[Chain.instance.chain.length - 1].transaction.amount}`)
+        console.log(`newBlock amount: ${newBlock.transaction.amount}`)
         Chain.instance.chain.push(new Block(newBlock.prevHash, newBlock.transaction, newBlock.ts));
         Chain.socket.emit("send money", newBlock.transaction.amount, newBlock.transaction.payer, newBlock.transaction.payee)
-        Chain.socket.emit("set chain", Chain.instance)
+        io.emit("set chain", Chain.instance)
     })
 
     socket.on("set chains", instance => {

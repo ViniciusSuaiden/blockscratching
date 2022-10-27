@@ -52,12 +52,11 @@ export default class Chain {
     const [salt, key] = senderPublicKey.split(":")
     const hashedBuffer = crypto.scryptSync(password, salt, 64)
     const isValid = hashedBuffer.toString() == key
-    console.log(isValid)
+    console.log(`isValid: ${isValid}`)
 
     if (isValid) {
-      console.log(this.chain.length - 1)
-      console.log(this.chain[1])
-      console.log(this.chain[this.chain.length - 1])
+      console.log(`this.chain.length: ${this.chain.length - 1}`)
+      console.log(`last amount from this.chain: ${this.chain[this.chain.length - 1].transaction.amount}`)
       const newBlock = new Block(this.lastBlock.hash, transaction);
       io.emit("get chains")
       setTimeout(() => {
