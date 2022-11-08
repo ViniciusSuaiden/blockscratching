@@ -5,6 +5,8 @@ export const io = new Server(http, {
     cors: {origin: "*"}
 })
 
+// npm i -g ts-node-dev && npm i && ts-node-dev --respawn src/index.ts /// package.json serve
+
 import Wallet from './classes/wallet'
 import WalletObj from './interfaces/wallet_obj'
 import Transaction from './classes/transaction'
